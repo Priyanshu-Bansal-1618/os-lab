@@ -1,8 +1,7 @@
-# Consolidated Report — Assignment 7
+# Consolidated Report - Assignment 7
 **xv6: Threads, Synchronization, Deadlock, and Scheduling**
-* **Student:** Shaan Shan | 2402MC08 | MA3104
+* **Student:** Priyanshu Bansal | 2401MC52 | MA3104 | Operating System
 * **Environment:** xv6 (public) on QEMU
-* **Note:** All kernel changes are documented and commented directly in the source code.
 
 ---
 
