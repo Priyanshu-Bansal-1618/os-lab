@@ -1,0 +1,57 @@
+--- xv6-clean/kalloc.c	2026-08-24 14:26:16.530683200 +0000
++++ asg8/q2-memstats/kalloc.c	2026-10-13 10:28:17.177405200 +0000
+@@ -21,6 +21,8 @@
+   struct spinlock lock;
+   int use_lock;
+   struct run *freelist;
++  int free_pages;
++  int total_pages;
+ } kmem;
+ 
+ // Initialization happens in two phases.
+@@ -50,6 +52,7 @@
+   p = (char*)PGROUNDUP((uint)vstart);
+   for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
+     kfree(p);
++  kmem.total_pages = kmem.free_pages;
+ }
+ //PAGEBREAK: 21
+ // Free the page of physical memory pointed at by v,
+@@ -72,6 +75,7 @@
+   r = (struct run*)v;
+   r->next = kmem.freelist;
+   kmem.freelist = r;
++  kmem.free_pages++;
+   if(kmem.use_lock)
+     release(&kmem.lock);
+ }
+@@ -89,8 +93,29 @@
+   r = kmem.freelist;
+   if(r)
+     kmem.freelist = r->next;
++    kmem.free_pages--;
+   if(kmem.use_lock)
+     release(&kmem.lock);
+   return (char*)r;
+ }
+ 
++
++int
++nfree_pages(void)
++{
++  int n;
++  acquire(&kmem.lock);
++  n = kmem.free_pages;
++  release(&kmem.lock);
++  return n;
++}
++
++int
++ntotal_pages(void)
++{
++  int n;
++  acquire(&kmem.lock);
++  n = kmem.total_pages;
++  release(&kmem.lock);
++  return n;
++}

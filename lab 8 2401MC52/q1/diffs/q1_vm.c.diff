@@ -1,0 +1,11 @@
+--- xv6-clean/vm.c	2026-08-24 14:26:16.976258900 +0000
++++ asg8/q1-va2pa/vm.c	2026-10-13 10:19:54.986976500 +0000
+@@ -32,7 +32,7 @@
+ // Return the address of the PTE in page table pgdir
+ // that corresponds to virtual address va.  If alloc!=0,
+ // create any required page table pages.
+-static pte_t *
++pte_t *
+ walkpgdir(pde_t *pgdir, const void *va, int alloc)
+ {
+   pde_t *pde;

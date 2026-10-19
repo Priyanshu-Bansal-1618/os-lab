@@ -1,0 +1,55 @@
+--- xv6-clean/sysproc.c	2026-08-24 14:26:16.859049500 +0000
++++ asg8/q4-lazy/sysproc.c	2026-10-13 10:52:30.340072700 +0000
+@@ -1,3 +1,4 @@
++#include "meminfo.h"
+ #include "types.h"
+ #include "x86.h"
+ #include "defs.h"
+@@ -47,15 +48,23 @@
+ {
+   int addr;
+   int n;
++  struct proc *cur = myproc();
+ 
+   if(argint(0, &n) < 0)
+     return -1;
+-  addr = myproc()->sz;
+-  if(growproc(n) < 0)
+-    return -1;
++  addr = cur->sz;
++  if(n > 0){
++    cur->sz += n;              // lazy: only grow sz, no growproc()
++  } else if(n < 0){
++    if(deallocuvm(cur->pgdir, cur->sz, cur->sz + n) == 0)
++      return -1;             // frees pages that were really allocated
++    cur->sz += n;
++    switchuvm(cur);
++  }
+   return addr;
+ }
+ 
++
+ int
+ sys_sleep(void)
+ {
+@@ -89,3 +98,20 @@
+   release(&tickslock);
+   return xticks;
+ }
++
++int
++sys_getmeminfo(void)
++{
++  struct meminfo *mi;
++  char *p;
++  struct proc *cur = myproc();
++
++  if(argptr(0, &p, sizeof(*mi)) < 0)
++    return -1;
++  mi = (struct meminfo*)p;
++  mi->total_pages = ntotal_pages();
++  mi->free_pages = nfree_pages();
++  mi->user_pages = cur->sz / PGSIZE;
++  mi->pt_pages = count_pt_pages(cur->pgdir);
++  return 0;
++}

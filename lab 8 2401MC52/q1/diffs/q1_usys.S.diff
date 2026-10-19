@@ -1,0 +1,7 @@
+--- xv6-clean/usys.S	2026-08-24 14:26:16.961714700 +0000
++++ asg8/q1-va2pa/usys.S	2026-10-13 10:21:03.023218400 +0000
+@@ -29,3 +29,4 @@
+ SYSCALL(sbrk)
+ SYSCALL(sleep)
+ SYSCALL(uptime)
++SYSCALL(va2pa)

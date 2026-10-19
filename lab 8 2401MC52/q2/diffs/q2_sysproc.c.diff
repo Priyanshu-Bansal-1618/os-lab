@@ -1,0 +1,28 @@
+--- xv6-clean/sysproc.c	2026-08-24 14:26:16.859049500 +0000
++++ asg8/q2-memstats/sysproc.c	2026-10-13 10:28:20.732371000 +0000
+@@ -1,3 +1,4 @@
++#include "meminfo.h"
+ #include "types.h"
+ #include "x86.h"
+ #include "defs.h"
+@@ -89,3 +90,20 @@
+   release(&tickslock);
+   return xticks;
+ }
++
++int
++sys_getmeminfo(void)
++{
++  struct meminfo *mi;
++  char *p;
++  struct proc *cur = myproc();
++
++  if(argptr(0, &p, sizeof(*mi)) < 0)
++    return -1;
++  mi = (struct meminfo*)p;
++  mi->total_pages = ntotal_pages();
++  mi->free_pages = nfree_pages();
++  mi->user_pages = cur->sz / PGSIZE;
++  mi->pt_pages = count_pt_pages(cur->pgdir);
++  return 0;
++}

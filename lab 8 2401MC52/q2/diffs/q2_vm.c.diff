@@ -1,0 +1,18 @@
+--- xv6-clean/vm.c	2026-08-24 14:26:16.976258900 +0000
++++ asg8/q2-memstats/vm.c	2026-10-13 10:28:17.194547500 +0000
+@@ -392,3 +392,15 @@
+ //PAGEBREAK!
+ // Blank page.
+ 
++
++// pages used by a process's page tables:
++// 1 (the directory page) + one per present PDE (a page-table page)
++int
++count_pt_pages(pde_t *pgdir)
++{
++  int i, n = 1;
++  for(i = 0; i < NPDENTRIES; i++)
++    if(pgdir[i] & PTE_P)
++      n++;
++  return n;
++}

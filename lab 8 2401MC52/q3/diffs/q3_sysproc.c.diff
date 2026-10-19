@@ -1,0 +1,13 @@
+--- xv6-clean/sysproc.c	2026-08-24 14:26:16.859049500 +0000
++++ asg8/q3-vmprint/sysproc.c	2026-10-13 10:39:45.142166800 +0000
+@@ -89,3 +89,10 @@
+   release(&tickslock);
+   return xticks;
+ }
++
++int
++sys_vmprint(void)
++{
++  vmprint(myproc()->pgdir);
++  return 0;
++}

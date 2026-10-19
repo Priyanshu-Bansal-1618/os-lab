@@ -1,0 +1,19 @@
+--- xv6-clean/trap.c	2026-08-24 14:26:16.883835200 +0000
++++ asg8/q4-lazy/trap.c	2026-10-13 11:03:29.482044300 +0000
+@@ -79,6 +79,16 @@
+     break;
+ 
+   //PAGEBREAK: 13
++  case T_PGFLT:
++    if(lazyalloc(rcr2()) < 0){
++      if((tf->cs & 3) == 0)
++        panic("kernel page fault on unmapped lazy page");
++      cprintf("pid %d: invalid page fault at va=%x - kill process\n",
++              myproc()->pid, rcr2());
++      myproc()->killed = 1;
++    }
++    break;
++
+   default:
+     if(myproc() == 0 || (tf->cs&3) == 0){
+       // In kernel, it must be our mistake.

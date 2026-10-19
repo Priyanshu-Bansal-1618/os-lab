@@ -1,0 +1,14 @@
+--- xv6-clean/defs.h	2026-08-24 14:26:16.379799800 +0000
++++ asg8/q4-lazy/defs.h	2026-10-13 10:52:16.991491100 +0000
+@@ -108,6 +108,11 @@
+ int             fork(void);
+ int             growproc(int);
+ int             kill(int);
++int             lazyalloc(uint);
++int             lazyalloc(uint);
++int             nfree_pages(void);
++int             ntotal_pages(void);
++int             count_pt_pages(pde_t*);
+ struct cpu*     mycpu(void);
+ struct proc*    myproc();
+ void            pinit(void);

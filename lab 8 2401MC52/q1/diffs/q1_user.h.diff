@@ -1,0 +1,10 @@
+--- xv6-clean/user.h	2026-08-24 14:26:16.939492100 +0000
++++ asg8/q1-va2pa/user.h	2026-10-13 10:21:03.039581500 +0000
+@@ -23,6 +23,7 @@
+ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
++int va2pa(int);
+ 
+ // ulib.c
+ int stat(const char*, struct stat*);

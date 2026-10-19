@@ -1,0 +1,7 @@
+--- xv6-clean/usys.S	2026-08-24 14:26:16.961714700 +0000
++++ asg8/q4-lazy/usys.S	2026-10-13 10:51:32.978849200 +0000
+@@ -29,3 +29,4 @@
+ SYSCALL(sbrk)
+ SYSCALL(sleep)
+ SYSCALL(uptime)
++SYSCALL(getmeminfo)

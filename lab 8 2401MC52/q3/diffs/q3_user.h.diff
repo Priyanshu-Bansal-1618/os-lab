@@ -1,0 +1,10 @@
+--- xv6-clean/user.h	2026-08-24 14:26:16.939492100 +0000
++++ asg8/q3-vmprint/user.h	2026-10-13 10:39:45.207744300 +0000
+@@ -23,6 +23,7 @@
+ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
++int vmprint(void);
+ 
+ // ulib.c
+ int stat(const char*, struct stat*);

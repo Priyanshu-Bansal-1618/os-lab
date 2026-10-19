@@ -1,0 +1,49 @@
+--- xv6-clean/vm.c	2026-08-24 14:26:16.976258900 +0000
++++ asg8/q3-vmprint/vm.c	2026-10-13 10:39:45.086908800 +0000
+@@ -392,3 +392,46 @@
+ //PAGEBREAK!
+ // Blank page.
+ 
++
++// Asg8 Q3: hierarchical dump of the calling process's page table
++void
++vmprint(pde_t *pgdir)
++{
++  int i, k, kernel_pdes, user_pages, guard;
++  pte_t *pgtab;
++  uint va;
++  struct proc *cur = myproc();
++
++  kernel_pdes = 0; user_pages = 0; guard = 0;
++  cprintf("== page directory of pid %d ==\n", cur->pid);
++  for(i = 0; i < NPDENTRIES; i++){
++    if(!(pgdir[i] & PTE_P))
++      continue;
++    cprintf("PDE %d: pgtab pa=%x flags P=%d W=%d U=%d\n",
++            i, PTE_ADDR(pgdir[i]),
++            1, (pgdir[i] & PTE_W) ? 1 : 0, (pgdir[i] & PTE_U) ? 1 : 0);
++    if((uint)(i << PDXSHIFT) >= KERNBASE){
++      kernel_pdes++;                 /* kernel mapping: count only */
++      continue;
++    }
++    pgtab = (pte_t*)P2V(PTE_ADDR(pgdir[i]));
++    for(k = 0; k < NPTENTRIES; k++){
++      if(!(pgtab[k] & PTE_P))
++        continue;
++      va = (i << PDXSHIFT) | (k << PTXSHIFT);
++      cprintf("    PTE %d: va=%x pa=%x flags P=%d W=%d U=%d%s\n",
++              k, va, PTE_ADDR(pgtab[k]),
++              1, (pgtab[k] & PTE_W) ? 1 : 0, (pgtab[k] & PTE_U) ? 1 : 0,
++              (pgtab[k] & PTE_U) ? "" : "   <== guard page (mapped, U cleared)");
++      if(pgtab[k] & PTE_U)
++        user_pages++;
++      else
++        guard = va;
++    }
++  }
++  cprintf("summary: %d kernel PDEs (>= KERNBASE, PTEs not dumped); %d user-accessible pages; guard page va=%x\n",
++          kernel_pdes, user_pages, guard);
++  cprintf("check: sz/PGSIZE=%d minus guard = %d vs user pages %d -> %s\n",
++          cur->sz / PGSIZE, cur->sz / PGSIZE - 1, user_pages,
++          user_pages == cur->sz / PGSIZE - 1 ? "MATCH" : "MISMATCH");
++}

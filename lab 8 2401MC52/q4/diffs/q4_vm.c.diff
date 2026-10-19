@@ -1,0 +1,93 @@
+--- xv6-clean/vm.c	2026-08-24 14:26:16.976258900 +0000
++++ asg8/q4-lazy/vm.c	2026-10-13 11:13:05.807204300 +0000
+@@ -269,7 +269,7 @@
+     else if((*pte & PTE_P) != 0){
+       pa = PTE_ADDR(*pte);
+       if(pa == 0)
+-        panic("kfree");
++        continue;   // lazy: skip absent entry
+       char *v = P2V(pa);
+       kfree(v);
+       *pte = 0;
+@@ -286,7 +286,7 @@
+   uint i;
+ 
+   if(pgdir == 0)
+-    panic("freevm: no pgdir");
++    panic("freevm: no pagetable");
+   deallocuvm(pgdir, KERNBASE, 0);
+   for(i = 0; i < NPDENTRIES; i++){
+     if(pgdir[i] & PTE_P){
+@@ -306,7 +306,7 @@
+ 
+   pte = walkpgdir(pgdir, uva, 0);
+   if(pte == 0)
+-    panic("clearpteu");
++    panic("clearpteu pte should exist");
+   *pte &= ~PTE_U;
+ }
+ 
+@@ -324,9 +324,9 @@
+     return 0;
+   for(i = 0; i < sz; i += PGSIZE){
+     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+-      panic("copyuvm: pte should exist");
++      continue;   // lazy: skip absent entry
+     if(!(*pte & PTE_P))
+-      panic("copyuvm: page not present");
++      continue;   // lazy: skip absent
+     pa = PTE_ADDR(*pte);
+     flags = PTE_FLAGS(*pte);
+     if((mem = kalloc()) == 0)
+@@ -392,3 +392,51 @@
+ //PAGEBREAK!
+ // Blank page.
+ 
++
++// pages used by a process's page tables:
++// 1 (the directory page) + one per present PDE (a page-table page)
++int
++count_pt_pages(pde_t *pgdir)
++{
++  int i, n = 1;
++  for(i = 0; i < NPDENTRIES; i++)
++    if(pgdir[i] & PTE_P)
++      n++;
++  return n;
++}
++
++// Asg8 Q4: fault in one lazy heap page for the current process.
++// Returns 0 on success (page now mapped PTE_W|PTE_U, zeroed), -1 if the
++// address is invalid (>= sz, guard page, already-present-but-not-user,
++// or kalloc failed).
++int
++lazyalloc(uint va)
++{
++  struct proc *cur = myproc();
++  pte_t *pte;
++  char *mem;
++
++  if(cur == 0 || va >= cur->sz)
++    return -1;
++  pte = walkpgdir(cur->pgdir, (void*)va, 0);
++  if(pte && (*pte & PTE_P)){
++    if(*pte & PTE_U)
++      return 0;            // already there (e.g. stack/text)
++    return -1;             // guard page: mapped but U cleared
++  }
++  mem = kalloc();
++  if(mem == 0)
++    return -1;             // out of physical memory
++  memset(mem, 0, PGSIZE);
++  if(mappages(cur->pgdir, (char*)PGROUNDDOWN(va), PGSIZE,
++              V2P(mem), PTE_W|PTE_U) < 0){
++    kfree(mem);
++    return -1;
++  }
++  return 0;
++}
++
++// Asg8 Q4: fault in one lazy heap page for the current process.
++// Returns 0 on success (page now mapped PTE_W|PTE_U, zeroed), -1 if the
++// address is invalid (>= sz, guard page, already-present-but-not-user,
++// or kalloc failed).

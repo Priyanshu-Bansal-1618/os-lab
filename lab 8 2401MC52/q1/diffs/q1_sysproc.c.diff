@@ -1,0 +1,28 @@
+--- xv6-clean/sysproc.c	2026-08-24 14:26:16.859049500 +0000
++++ asg8/q1-va2pa/sysproc.c	2026-10-13 10:21:02.998947300 +0000
+@@ -89,3 +89,25 @@
+   release(&tickslock);
+   return xticks;
+ }
++
++int
++sys_va2pa(void)
++{
++  int va;
++  pte_t *pte;
++  uint pa;
++  struct proc *cur = myproc();
++
++  if(argint(0, &va) < 0)
++    return -1;
++  pte = walkpgdir(cur->pgdir, (void*)va, 0);
++  if(pte == 0 || !(*pte & PTE_P) || !(*pte & PTE_U)){
++    cprintf("va2pa: va=%x -> not present or not user-accessible (return -1)\n", (uint)va);
++    return -1;
++  }
++  pa = PTE_ADDR(*pte) + ((uint)va & 0xFFF);
++  cprintf("va2pa: va=%x PDX=%d PTX=%d off=%x PTE=%x flags P=%d W=%d U=%d -> pa=%x\n",
++          (uint)va, PDX(va), PTX(va), (uint)va & 0xFFF, (uint)*pte,
++          (*pte & PTE_P) ? 1 : 0, (*pte & PTE_W) ? 1 : 0, (*pte & PTE_U) ? 1 : 0, pa);
++  return (int)pa;
++}

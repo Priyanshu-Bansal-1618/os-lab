@@ -1,0 +1,55 @@
+#include "types.h"
+#include "stat.h"
+#include "user.h"
+#include "meminfo.h"
+
+static void
+show(char *tag)
+{
+  struct meminfo mi;
+  getmeminfo(&mi);
+  printf(1, "[%s] free=%d user_pages=%d pt=%d\n",
+         tag, mi.free_pages, mi.user_pages, mi.pt_pages);
+}
+
+int
+main(void)
+{
+  char *big;
+  int pid;
+
+  show("before 32MB sbrk");
+  big = sbrk(32 * 1024 * 1024);
+  if(big == (char*)-1){ printf(1, "sbrk failed\n"); exit(); }
+  show("after 32MB sbrk (free ~unchanged = lazy!)");
+
+  big[0] = 'A';
+  big[16 * 1024 * 1024] = 'B';
+  big[32 * 1024 * 1024 - 1] = 'C';
+  show("after touching 3 pages (free fell ~3)");
+  printf(1, "read back: %c %c %c\n", big[0], big[16*1024*1024], big[32*1024*1024-1]);
+
+  write(1, big + 4096 * 100, 8);   /* kernel copyin faults in untouched page */
+  printf(1, "<- 8 zero bytes via write() on untouched buffer (ok)\n");
+
+  pid = fork();
+  if(pid == 0){
+    printf(1, "child sees touched value: %c (copyuvm skipped absent PTEs)\n",
+           big[16 * 1024 * 1024]);
+    exit();
+  }
+  wait();
+  show("after fork+reap");
+
+  pid = fork();
+  if(pid == 0){
+    printf(1, "child touching va == sz (invalid)...\n");
+    big[32 * 1024 * 1024] = 'X';
+    printf(1, "SHOULD NEVER PRINT\n");
+    exit();
+  }
+  wait();
+  printf(1, "parent + kernel alive after child was killed for bad access\n");
+  printf(1, "lazytest done\n");
+  exit();
+}

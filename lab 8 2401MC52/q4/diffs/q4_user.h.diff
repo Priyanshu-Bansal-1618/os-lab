@@ -1,0 +1,11 @@
+--- xv6-clean/user.h	2026-08-24 14:26:16.939492100 +0000
++++ asg8/q4-lazy/user.h	2026-10-13 10:51:34.034035800 +0000
+@@ -23,6 +23,8 @@
+ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
++#include "meminfo.h"
++int getmeminfo(struct meminfo*);
+ 
+ // ulib.c
+ int stat(const char*, struct stat*);

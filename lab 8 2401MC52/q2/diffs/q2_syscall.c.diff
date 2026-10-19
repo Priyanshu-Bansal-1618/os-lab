@@ -1,0 +1,18 @@
+--- xv6-clean/syscall.c	2026-08-24 14:26:16.837209800 +0000
++++ asg8/q2-memstats/syscall.c	2026-10-13 10:28:20.865789600 +0000
+@@ -84,6 +84,7 @@
+ 
+ extern int sys_chdir(void);
+ extern int sys_close(void);
++extern int sys_getmeminfo(void);
+ extern int sys_dup(void);
+ extern int sys_exec(void);
+ extern int sys_exit(void);
+@@ -126,6 +127,7 @@
+ [SYS_link]    sys_link,
+ [SYS_mkdir]   sys_mkdir,
+ [SYS_close]   sys_close,
++[SYS_getmeminfo] sys_getmeminfo,
+ };
+ 
+ void
